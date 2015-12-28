@@ -1,0 +1,171 @@
+package com.qualcomm.ftcrobotcontroller.opmodes;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+//------------------------------------------------------------------------------
+//
+// PushBotManual
+//
+
+
+
+/**
+ * Provide a basic manual operational mode that uses the left and right
+ * drive motors, left arm motor, servo motors and gamepad input from two
+ * gamepads for the Push Bot.
+ *
+ * @author Stephen Foster Team 9765
+ * @version 12-27-2015
+ */
+public class 0PigBotAuto extends PushBotTelemetry {
+/*
+    GAMEPAD 1
+    left joystick = left drive
+    right joystick = right drive
+    right trigger = drive forward .25% Power
+    right bumper =
+    left trigger =
+    left bumper =
+    a =
+    b =
+    GAMEPAD 2
+    left joystick =
+    right joystick =
+    right trigger =
+    right bumper =
+    a = Arm down
+    y = Arm up
+    x = Gripper open
+    b = Gropper closed
+
+/*
+		 * Use the hardwareMap to get the dc motors and servos by name. Note
+		 * that the names of the devices must match the names used when you
+		 * configured your robot and created the configuration file.
+		 */
+
+		/*
+		 * For the PigBotAuto we assume the following,
+		 *   There are two motors for the drive system on the first motor controller
+		 *   "right_drive" is on the right side of the bot.
+		 *   "left_drive" is on the left side of the bot.
+		 *
+		 * *   There is one motor for the arm system on the second motor controller
+		 *   "left_arm" is on the center of the bot.
+		 *
+		 * We also assume that there are two servos that make the gripper
+		 *  "left_hand" and "right_hand"
+		 *
+		 *          Arm_Controller
+         *              #1 left_arm
+         *          Servo_Controller
+         *              #1 left_hand
+         *              #2 right_hand
+         *          Drive_Controller
+         *              #1 left_drive
+         *              #2 right_drive
+         *          Device_controller
+         *              #1 arm_down_limit
+		 */
+
+    //TODO - make sure that all triggers are coded for GREATER THAN 0.5 - weird start error if not connected
+
+
+    final double LEFT_OPEN_POSITION = 0.85;
+    final double LEFT_CLOSED_POSITION = 0.25;
+    final double RIGHT_OPEN_POSITION = 0.25;
+    final double RIGHT_CLOSED_POSITION = 0.85;
+
+    public Servo leftGripper;
+    public Servo rightGripper;
+
+    public DcMotor motorRight;
+    public DcMotor motorLeft;
+    public DcMotor leftArm;
+    public TouchSensor touchsensor;
+
+    final double driveslow = 0.25;
+    final double drivefast = 1;
+
+
+
+
+
+
+
+
+
+
+
+    @Override
+    public void runOpmode() throws InterruptedException {
+        // setup the drive motors and gripper
+        leftGripper = hardwareMap.servo.get("left_hand");
+        rightGripper = hardwareMap.servo.get("right_hand");
+        motorRight = hardwareMap.dcMotor.get("right_drive");
+        motorLeft = hardwareMap.dcMotor.get("left_drive");
+        motorRight.setDirection(DcMotor.Direction.REVERSE);
+        leftArm = hardwareMap.dcMotor.get("left_arm");
+        touchsensor = hardwareMap.touchSensor.get("arm_down_limit");
+
+        // wait for the start button
+        waitForStart();
+        // set gripper closed
+
+        leftGripper = 0.25;
+        rightGripper = 0.85;
+
+
+        // set the motors to drive forward
+        motorLeft.setPower(.5);
+        motorRight.setPower(.5);
+
+        //wait for 2 seconds while running drive motors
+        sleep(2000);
+
+        //set drive motors to turn right
+        motorLeft.setPower(.5);
+        motorRight.setPower(-.5);
+
+        //wait for 1.1 seconds for the robot to turn
+        sleep(1100);
+
+        // set the motors to drive forward
+        motorLeft.setPower(.5);
+        motorRight.setPower(.5);
+
+        //wait for 2 seconds while running drive motors
+        sleep(2000);
+
+        //set drive motors to turn right
+        motorLeft.setPower(-0.5);
+        motorRight.setPower(0.5);
+
+        //wait for 1.1 seconds for the robot to turn
+
+        sleep(1100);
+
+
+        //lift arm
+
+        leftArm.setPower(2);
+
+        //wait for .1 seconds for the robot to turn
+
+        sleep(100);
+
+
+
+        // Stop the romopt
+
+        motorLeft.setPower(0);
+        motorRight.setPower(0);
+
+
+
+
+
+
+    }
+
+}
