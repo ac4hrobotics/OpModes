@@ -1,0 +1,235 @@
+package com.qualcomm.ftcrobotcontroller.opmodes;
+
+//------------------------------------------------------------------------------
+//
+// PushBotManual
+//
+
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
+
+/**
+ * Provide a basic manual operational mode that uses the left and right
+ * drive motors, left arm motor, servo motors and gamepad input from two
+ * gamepads for the Push Bot.
+ *
+ * @author SSI Robotics
+ * @version 2015-08-01-06-01
+ */
+public class PushBotManual1 extends PushBotTelemetry {
+/*
+    GAMEPAD 1
+    left joystick = left drive
+    right joystick = right drive
+    right trigger = drive forward .25% Power
+    right bumper =
+    left trigger =
+    left bumper =
+    a =
+    b =
+    GAMEPAD 2
+    left joystick =
+    right joystick =
+    right trigger =
+    right bumper =
+    a = Arm down
+    y = Arm up
+    x = Gripper open
+    b = Gropper closed
+
+    Arm_Controller
+    #1 left_arm
+    Servo_Controller
+    #1 left_hand
+    #2 right_hand
+    Drive_Controller
+    #1 left_drive
+    #2 right_drive
+    Device_controller
+    #1 arm_down_limit
+
+
+
+    //TODO - make sure that all triggers are coded for GREATER THAN 0.5 - weird start error if not connected
+    */
+
+    final double LEFT_OPEN_POSITION = 0.85;
+    final double LEFT_CLOSED_POSITION = 0.25;
+    final double RIGHT_OPEN_POSITION = 0.25;
+    final double RIGHT_CLOSED_POSITION = 0.85;
+
+    public Servo leftGripper;
+    public Servo rightGripper;
+
+    public DcMotor motorRight;
+    public DcMotor motorLeft;
+    public DcMotor leftArm;
+    public TouchSensor touchsensor;
+
+    final double driveslow = 0.25;
+    final double drivefast = 1;
+
+    @Override
+    public void init() {
+		/*
+		 * Use the hardwareMap to get the dc motors and servos by name. Note
+		 * that the names of the devices must match the names used when you
+		 * configured your robot and created the configuration file.
+		 */
+
+		/*
+		 * For the demo pushbot we assume the following,
+		 *   There are two motors "right_drive" and "left_drive"
+		 *   "right_drive" is on the right side of the bot.
+		 *   "left_drive" is on the left side of the bot.
+		 *
+		 * We also assume that there are two servos "servo_1" and "servo_2"
+		 *    "servo_1" controls the arm joint of the manipulator.
+		 *    "servo_2" controls the claw joint of the manipulator.
+		 */
+        leftGripper = hardwareMap.servo.get("left_hand");
+        rightGripper = hardwareMap.servo.get("right_hand");
+        motorRight = hardwareMap.dcMotor.get("right_drive");
+        motorLeft = hardwareMap.dcMotor.get("left_drive");
+        motorRight.setDirection(DcMotor.Direction.REVERSE);
+        leftArm = hardwareMap.dcMotor.get("left_arm");
+        touchsensor = hardwareMap.touchSensor.get("arm_down_limit");
+
+
+        //
+        // Initialize class members.
+        //        // All via self-construction.
+
+        // PushBotManual
+
+        //--------------------------------------------------------------------------
+        //
+        // loop
+        //
+        /**
+         * Implement a state machine that controls the robot during
+         * manual-operation.  The state machine uses gamepad input to transition
+         * between states.
+         *
+         * The system calls this member repeatedly while the OpMode is running.
+         */
+    }
+
+    @Override
+    public void loop()
+
+    {
+        //----------------------------------------------------------------------
+        //
+        // DC Motors
+        //
+        // Obtain the current values of the joystick controllers.
+        //
+        // Note that x and y equal -1 when the joystick is pushed all of the way
+        // forward (i.e. away from the human holder's body).
+        //
+        // The clip method guarantees the value never exceeds the range +-1.
+        //
+        // The DC motors are scaled to make it easier to control them at slower
+        // speeds.
+        //
+        // The setPower methods write the motor power values to the DcMotor
+        // class, but the power levels aren't applied until this method ends.
+        //
+
+        //
+        // Manage the drive wheel motors.
+        //
+
+        float leftY = -gamepad1.left_stick_y;
+        float rightY = -gamepad1.right_stick_y;
+        float armY = -gamepad2.left_stick_y;
+
+        motorLeft.setPower(leftY);
+        motorRight.setPower(rightY);
+        leftArm.setPower(armY);
+
+
+//if (gamepad1.left_trigger) {
+        //leftY = gamepad1.left_stick_y*driveslow;
+        // rightY= gamepad1.right_stick_y*driveslow;
+
+
+        if (gamepad1.left_trigger >= 0.1f) {
+            motorLeft.setPower(0.25);
+        }
+        if (gamepad1.right_trigger >= 0.1f) {
+            motorRight.setPower(0.25);
+        }
+        if (gamepad1.left_bumper) {
+            motorLeft.setPower(-0.25);
+
+        }
+        if (gamepad1.right_bumper) {
+            motorRight.setPower(-0.25);
+        }
+
+
+        //
+        // Manage the arm motor.
+        //
+        //float left_arm_power = scale_motor_power (-gamepad2.left_stick_y);
+        //m_left_arm_power (left_arm_power);
+        if (gamepad2.y) {
+            leftArm.setPower(.5);
+        } else if (gamepad2.a) {
+            leftArm.setPower(-.5);
+
+        } else {
+            leftArm.setPower(0);
+        }
+        //----------------------------------------------------------------------
+        //
+        // Servo Motors
+        //
+        // Obtain the current values of the gamepad 'x' and 'b' buttons.
+        //
+        // Note that x and b buttons have boolean values of true and false.
+        //
+        // The clip method guarantees the value never exceeds the allowable range of
+        // [0,1].
+        //
+        // The setPosition methods write the motor power values to the Servo
+        // class, but the positions aren't applied until this method ends.
+        //
+        if (gamepad2.x) {
+            leftGripper.setPosition(LEFT_OPEN_POSITION);
+            rightGripper.setPosition(RIGHT_OPEN_POSITION);
+        } else if (gamepad2.b) {
+            leftGripper.setPosition(LEFT_CLOSED_POSITION);
+            rightGripper.setPosition(RIGHT_CLOSED_POSITION);
+        }
+
+        // Touch sensor for arm
+
+        if (touchsensor.isPressed()) {
+            //Stops the arm motor when the touch sensor is pushed
+            leftArm.setPower(0);
+        } else if (gamepad2.y >= 1) and
+                  (touchsensor.isPressed()); {
+            // if touch sensor is pushed and y button is pushed
+            leftArm.setPower(.5);
+
+        } else {
+            leftArm.setPower(.55);
+        }
+
+        //
+        // Send telemetry data to the driver station.
+        //
+        update_telemetry (); // Update common telemetry
+        update_gamepad_telemetry ();
+
+    } // loop
+
+
+// PushBotManual
+
+
+}
